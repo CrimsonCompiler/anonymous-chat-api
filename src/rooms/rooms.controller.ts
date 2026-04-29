@@ -1,4 +1,13 @@
-import { Body, Controller, Post, Req, Get, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Req,
+  Get,
+  UseGuards,
+  Delete,
+  Param,
+} from '@nestjs/common';
 import { AuthGuard } from 'src/auth/auth.guard';
 import type { Request } from 'express';
 import { RoomsService } from './rooms.service';
@@ -18,5 +27,11 @@ export class RoomsController {
   @Get()
   async getAllRooms() {
     return this.roomsService.getAllRooms();
+  }
+
+  @Delete(':id')
+  async deleteRoom(@Param('id') roomId: string, @Req() req: Request) {
+    const username = req['user'].username;
+    return this.roomsService.deleteRoom(roomId, username);
   }
 }
