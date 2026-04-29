@@ -29,6 +29,11 @@ export class RoomsController {
     return this.roomsService.getAllRooms();
   }
 
+  @Get(':id')
+  async getRoomById(@Param('id') roomId: string) {
+    return this.roomsService.getRoomDetails(roomId);
+  }
+
   @Delete(':id')
   async deleteRoom(@Param('id') roomId: string, @Req() req: Request) {
     const username = req['user'].username;
