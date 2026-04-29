@@ -67,13 +67,13 @@ export class RoomsService {
   }
 
   async getAllRooms() {
-    const allRooms = await this.db
+    const existingRooms = await this.db
       .select()
       .from(schema.rooms)
       .orderBy(desc(schema.rooms.createdAt));
 
     const roomsWithActiveUsers = await Promise.all(
-      allRooms.map(async (room: any) => {
+      existingRooms.map(async (room: any) => {
         const activeCount = await this.redis.scard(
           `room:${room.id}:active_users`,
         );
@@ -159,14 +159,26 @@ export class RoomsService {
       });
     }
 
+    const roomsWithActiveUsers = await Promise.all(
+      existingRooms.map(async (room: any) => {
+        const activeCount = await this.redis.scard(
+          `room:${room.id}:active_users`,
+        );
+
+        return {
+          id: room.id,
+          name: room.name,
+          createdBy: room.createdBy,
+          activeUsers: activeCount,
+          createdAt: new Date(room.createdAt).toISOString().split('.')[0] + 'Z',
+        };
+      }),
+    );
+
     return {
       success: true,
       data: {
-        id: room.id,
-        name: room.name,
-        createdBy: room.createdBy,
-        activeUsers: 0,
-        createdAt: room.createdAt,
+        rooms: roomsWithActiveUsers,
       },
     };
   }
