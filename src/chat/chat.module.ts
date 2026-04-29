@@ -4,5 +4,6 @@ import { RedisModule } from 'src/redis/redis.module';
 @Module({
   imports: [RedisModule],
   providers: [ChatGateway],
+  exports:[ChatGateway]
 })
 export class ChatModule {}

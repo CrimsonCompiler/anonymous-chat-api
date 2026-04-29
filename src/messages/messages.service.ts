@@ -6,12 +6,14 @@ import * as schema from '../database/schema';
 import { and, desc, eq, lt } from 'drizzle-orm';
 import * as crypto from 'crypto';
 import { SendMessageDto } from './dto/send-message.dto';
+import { ChatGateway } from 'src/chat/chat.gateway';
 
 @Injectable()
 export class MessagesService {
   constructor(
     @Inject(DB_CONNECTION) private readonly db: any,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
+    private readonly chatGateway: ChatGateway,
   ) {}
 
   // send a new message
@@ -29,7 +31,7 @@ export class MessagesService {
     }
 
     // creating a new message id
-    const msgId = `msg_${crypto.randomBytes(4).toString('hex')}`;
+    const msgId = `msg_${Math.random().toString(36).substring(2, 10)}`;
 
     const insertedMessage = await this.db
       .insert(schema.messages)
@@ -52,11 +54,7 @@ export class MessagesService {
       createdAt: new Date(msg.createdAt).toISOString().split('.')[0] + 'Z',
     };
 
-    // redis publish
-    await this.redis.publish(
-      `room:${roomId}:messages`,
-      JSON.stringify({ event: 'message.new', data: messageData }),
-    );
+    this.chatGateway.server.to(roomId).emit('message:new', messageData);
 
     // response
     return {
