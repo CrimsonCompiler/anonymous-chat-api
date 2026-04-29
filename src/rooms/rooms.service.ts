@@ -2,7 +2,7 @@ import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { DB_CONNECTION } from 'src/database/database.module';
 import { CreateRoomDto } from './dto/create-room.dto';
 import * as schema from '../database/schema';
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -49,6 +49,26 @@ export class RoomsService {
         name: room.name,
         createdBy: room.createdBy,
         createdAt: room.createdAt,
+      },
+    };
+  }
+
+  async getAllRooms() {
+    const allRooms = await this.db
+      .select()
+      .from(schema.rooms)
+      .orderBy(desc(schema.rooms.createdAt));
+
+    return {
+      success: true,
+      data: {
+        rooms: allRooms.map((room) => ({
+          id: room.id,
+          name: room.name,
+          cratedBy: room.createdBy,
+          activeUsers: 0,
+          createdAt: room.createdAt,
+        })),
       },
     };
   }

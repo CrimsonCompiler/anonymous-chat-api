@@ -14,4 +14,9 @@ export class RoomsController {
 
     return this.roomsService.createRoom(createRoomDto, username);
   }
+
+  @Get()
+  async getAllRooms() {
+    return this.roomsService.getAllRooms();
+  }
 }
