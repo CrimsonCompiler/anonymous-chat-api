@@ -2,6 +2,8 @@ import {
   WebSocketGateway,
   WebSocketServer,
   OnGatewayConnection,
+  OnGatewayDisconnect,
+  SubscribeMessage,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Inject } from '@nestjs/common';
@@ -33,12 +35,14 @@ export class ChatGateway implements OnGatewayConnection {
         throw new Error('Missing token or roomId');
       }
 
+      // Token Checking
       const sessionData = await this.redis.get(`session:${token}`);
       if (!sessionData) {
         throw new Error('Invalid token');
       }
       const user = JSON.parse(sessionData);
 
+      // Room Checking
       const roomCheck = await this.db
         .select()
         .from(schema.rooms)
@@ -48,8 +52,26 @@ export class ChatGateway implements OnGatewayConnection {
         throw new Error('Room not found');
       }
 
+      // Save data into socket
       client.data.user = user;
       client.data.roomId = roomId;
+
+      // Join into socket rooms
+      client.join(roomId);
+
+      // Save user as a Active user in Redis Set
+      const redisRoomKey = `room:${roomId}:active_users`;
+      await this.redis.sadd(redisRoomKey, user.username);
+
+      // getting the list of the active users ( set members )
+      const activeUsers = await this.redis.smembers(redisRoomKey);
+
+      client.emit('room:joined', { activeUsers });
+
+      client.broadcast.to(roomId).emit('room:user_joined', {
+        username: user.username,
+        activeUsers,
+      });
 
       console.log(
         `🟢 Connection Validated! User: ${user.username}, Room: ${roomId}`,
@@ -57,6 +79,32 @@ export class ChatGateway implements OnGatewayConnection {
     } catch (error: any) {
       console.log(`🔴 Connection Rejected: ${error.message}`);
       client.disconnect();
+    }
+  }
+
+  async handleDisconnect(client: Socket) {
+    await this.handleUserLeave(client);
+  }
+
+  private async handleUserLeave(client: Socket) {
+    const user = client.data.user;
+    const roomId = client.data.roomId;
+
+    if (user && roomId) {
+      const redisRoomKey = `room:${roomId}:active_users`;
+
+      await this.redis.srem(redisRoomKey, user.username);
+      const activeUsers = await this.redis.smembers(redisRoomKey);
+
+      client.broadcast.to(roomId).emit('room:user_left', {
+        username: user.username,
+        activeUsers,
+      });
+
+      console.log(`🔴 ${user.username} left room: ${roomId}`);
+
+      client.data.user = null;
+      client.data.roomId = null;
     }
   }
 }
