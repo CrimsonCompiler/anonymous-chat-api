@@ -3,7 +3,7 @@ import { DB_CONNECTION } from '../database/database.module';
 import { REDIS_CLIENT } from '../redis/redis.module';
 import Redis from 'ioredis';
 import * as schema from '../database/schema';
-import { eq } from 'drizzle-orm';
+import { and, desc, eq, lt } from 'drizzle-orm';
 import * as crypto from 'crypto';
 import { SendMessageDto } from './dto/send-message.dto';
 
@@ -62,6 +62,65 @@ export class MessagesService {
     return {
       success: true,
       data: messageData,
+    };
+  }
+
+  async getMessagesByRoomId(roomId: string, limit: number, before?: string) {
+    const existingRooms = await this.db
+      .select()
+      .from(schema.rooms)
+      .where(eq(schema.rooms.id, roomId));
+
+    if (existingRooms.length === 0) {
+      throw new NotFoundException({
+        success: false,
+        error: { code: 'ROOM_NOT_FOUND', message: 'Room not found' },
+      });
+    }
+
+    const conditions: any[] = [eq(schema.messages.roomId, roomId)];
+
+    if (before) {
+      const cursorMsg = await this.db
+        .select()
+        .from(schema.messages)
+        .where(eq(schema.messages.id, before));
+
+      if (cursorMsg.length > 0) {
+        conditions.push(lt(schema.messages.createdAt, cursorMsg[0].createdAt));
+      }
+    }
+
+    const rawMessages = await this.db
+      .select()
+      .from(schema.messages)
+      .where(and(...conditions))
+      .orderBy(desc(schema.messages.createdAt))
+      .limit(limit + 1);
+
+    const hasMore = rawMessages.length > limit;
+
+    if (hasMore) {
+      rawMessages.pop();
+    }
+
+    rawMessages.reverse();
+
+    const nextCursor = hasMore ? rawMessages[0].id : null;
+
+    return {
+      success: true,
+      data: {
+        messages: rawMessages.map((msg: any) => ({
+          id: msg.id,
+          roomId: msg.roomId,
+          username: msg.username,
+          content: msg.content,
+          createdAt: new Date(msg.createdAt).toISOString().split('.')[0] + 'Z',
+        })),
+        hasMore,
+        nextCursor,
+      },
     };
   }
 }
