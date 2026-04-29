@@ -9,7 +9,6 @@ import { DB_CONNECTION } from 'src/database/database.module';
 import { CreateRoomDto } from './dto/create-room.dto';
 import * as schema from '../database/schema';
 import { desc, eq } from 'drizzle-orm';
-import * as crypto from 'crypto';
 import { REDIS_CLIENT } from 'src/redis/redis.module';
 import { ChatGateway } from 'src/chat/chat.gateway';
 import Redis from 'ioredis';
@@ -109,7 +108,7 @@ export class RoomsService {
         success: false,
         error: {
           code: 'ROOM_NOT_FOUND',
-          message: `Room with id ${room.id} does not exist`,
+          message: `Room with id ${roomId} does not exist`,
         },
       });
     }
@@ -154,7 +153,7 @@ export class RoomsService {
         success: false,
         error: {
           code: 'ROOM_NOT_FOUND',
-          message: `Room with id ${room.id} does not exist`,
+          message: `Room with id ${roomId} does not exist`,
         },
       });
     }
