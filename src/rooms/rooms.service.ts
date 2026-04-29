@@ -116,4 +116,34 @@ export class RoomsService {
       },
     };
   }
+
+  async getRoomDetails(roomId: string) {
+    const existingRooms = await this.db
+      .select()
+      .from(schema.rooms)
+      .where(eq(schema.rooms.id, roomId));
+
+    const room = existingRooms[0];
+
+    if (!room) {
+      throw new NotFoundException({
+        success: false,
+        error: {
+          code: 'ROOM_NOT_FOUND',
+          message: 'Room not found',
+        },
+      });
+    }
+
+    return {
+      success: true,
+      data: {
+        id: room.id,
+        name: room.name,
+        createdBy: room.createdBy,
+        activeUsers: 0,
+        createdAt: room.createdAt,
+      },
+    };
+  }
 }
