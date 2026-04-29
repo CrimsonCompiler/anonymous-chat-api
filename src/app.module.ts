@@ -5,9 +5,10 @@ import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { RedisModule } from './redis/redis.module';
 import { AuthModule } from './auth/auth.module';
+import { RoomsModule } from './rooms/rooms.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), DatabaseModule, RedisModule, AuthModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), DatabaseModule, RedisModule, AuthModule, RoomsModule],
   controllers: [AppController],
   providers: [AppService],
 })
