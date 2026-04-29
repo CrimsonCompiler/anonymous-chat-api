@@ -18,8 +18,7 @@ async function bootstrap() {
           success: false,
           error: {
             code: 'VALIDATION_ERROR',
-            message:
-              'Room name can only contain alphanumeric characters and hyphens',
+            message: message,
           },
         });
       },
