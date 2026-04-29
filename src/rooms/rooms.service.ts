@@ -1,4 +1,10 @@
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { DB_CONNECTION } from 'src/database/database.module';
 import { CreateRoomDto } from './dto/create-room.dto';
 import * as schema from '../database/schema';
@@ -69,6 +75,44 @@ export class RoomsService {
           activeUsers: 0,
           createdAt: room.createdAt,
         })),
+      },
+    };
+  }
+
+  async deleteRoom(roomId: string, username: string) {
+    const existingRooms = await this.db
+      .select()
+      .from(schema.rooms)
+      .where(eq(schema.rooms.id, roomId));
+
+    const room = existingRooms[0];
+
+    if (!room) {
+      throw new NotFoundException({
+        success: false,
+        error: {
+          code: 'ROOM_NOT_FOUND',
+          message: 'Room not found',
+        },
+      });
+    }
+
+    if (room.createdBy !== username) {
+      throw new ForbiddenException({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: 'You do not have the permission to delete this room.',
+        },
+      });
+    }
+
+    // if all okay
+    await this.db.delete(schema.rooms).where(eq(schema.rooms.id, roomId));
+    return {
+      success: true,
+      data: {
+        message: 'Room deleted successfully',
       },
     };
   }
