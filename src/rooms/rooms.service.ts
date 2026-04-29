@@ -10,10 +10,17 @@ import { CreateRoomDto } from './dto/create-room.dto';
 import * as schema from '../database/schema';
 import { desc, eq } from 'drizzle-orm';
 import * as crypto from 'crypto';
+import { REDIS_CLIENT } from 'src/redis/redis.module';
+import { ChatGateway } from 'src/chat/chat.gateway';
+import Redis from 'ioredis';
 
 @Injectable()
 export class RoomsService {
-  constructor(@Inject(DB_CONNECTION) private readonly db: any) {}
+  constructor(
+    @Inject(DB_CONNECTION) private readonly db: any,
+    @Inject(REDIS_CLIENT) private readonly redis: Redis,
+    private readonly chatGateway: ChatGateway,
+  ) {}
 
   async createRoom(createRoomDto: CreateRoomDto, username: string) {
     const { name } = createRoomDto;
@@ -92,7 +99,7 @@ export class RoomsService {
         success: false,
         error: {
           code: 'ROOM_NOT_FOUND',
-          message: 'Room not found',
+          message: `Room with id ${room.id} does not exist`,
         },
       });
     }
@@ -102,17 +109,24 @@ export class RoomsService {
         success: false,
         error: {
           code: 'FORBIDDEN',
-          message: 'You do not have the permission to delete this room.',
+          message: 'Only the room creator can delete this room',
         },
       });
     }
 
     // if all okay
     await this.db.delete(schema.rooms).where(eq(schema.rooms.id, roomId));
+
+    // Broadcast with socket.io
+    this.chatGateway.server.to(roomId).emit('room:deleted', { roomId });
+
+    // ^-^ forcefully remove the clients
+    this.chatGateway.server.in(roomId).disconnectSockets();
+
     return {
       success: true,
       data: {
-        message: 'Room deleted successfully',
+        deleted: true,
       },
     };
   }
@@ -130,7 +144,7 @@ export class RoomsService {
         success: false,
         error: {
           code: 'ROOM_NOT_FOUND',
-          message: 'Room not found',
+          message: `Room with id ${room.id} does not exist`,
         },
       });
     }
