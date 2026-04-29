@@ -27,7 +27,7 @@ export class AuthService {
 
     // Create a new user if not found this user
     if (!user) {
-      const newUserId = `usr_${randomBytes(4).toString('hex')}`;
+      const newUserId = `usr_${Math.random().toString(36).substring(2, 10)}`;
       const insertedUsers = await this.db
         .insert(schema.users)
         .values({
@@ -58,7 +58,7 @@ export class AuthService {
         user: {
           id: user.id,
           username: user.username,
-          createdAt: user.createdAt,
+          createdAt: new Date(user.createdAt).toISOString().split('.')[0] + 'Z',
         },
       },
     };

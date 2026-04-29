@@ -42,7 +42,7 @@ export class RoomsService {
     }
 
     // Saving to db if not exists
-    const newRoomId = `room_${crypto.randomBytes(4).toString('hex')}`;
+    const newRoomId = `room_${Math.random().toString(36).substring(2, 10)}`;
 
     const insertedRooms = await this.db
       .insert(schema.rooms)
@@ -61,10 +61,10 @@ export class RoomsService {
         id: room.id,
         name: room.name,
         createdBy: room.createdBy,
-        createdAt: room.createdAt,
+        createdAt: new Date(room.createdAt).toISOString().split('.')[0] + 'Z',
       },
     };
-  }
+  } 
 
   async getAllRooms() {
     const allRooms = await this.db
@@ -80,7 +80,7 @@ export class RoomsService {
           name: room.name,
           cratedBy: room.createdBy,
           activeUsers: 0,
-          createdAt: room.createdAt,
+          createdAt: new Date(room.createdAt).toISOString().split('.')[0] + 'Z',
         })),
       },
     };
