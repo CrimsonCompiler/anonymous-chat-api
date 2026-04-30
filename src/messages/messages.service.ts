@@ -26,7 +26,7 @@ export class MessagesService {
     if (existingRooms.length === 0) {
       throw new NotFoundException({
         success: false,
-        error: { code: 'ROOM_NOT_FOUND', message: 'Room not found' },
+        error: { code: 'ROOM_NOT_FOUND', message: `Room with id ${roomId} does not exist` },
       });
     }
 
@@ -72,7 +72,10 @@ export class MessagesService {
     if (existingRooms.length === 0) {
       throw new NotFoundException({
         success: false,
-        error: { code: 'ROOM_NOT_FOUND', message: 'Room not found' },
+        error: {
+          code: 'ROOM_NOT_FOUND',
+          message: `Room with id ${roomId} does not exist`,
+        },
       });
     }
 
