@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { UnprocessableEntityException, ValidationPipe } from '@nestjs/common'; // 🚀 UnprocessableEntityException ইম্পোর্ট নিশ্চিত করুন
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -10,14 +10,20 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true,
       transform: true,
+      stopAtFirstError: true,
       exceptionFactory: (errors) => {
         const firstError = errors[0];
+        const constraintKey = Object.keys(firstError.constraints || {})[0];
         const message =
-          Object.values(firstError.constraints || {})[0] || 'Validation failed';
-        return new BadRequestException({
+          firstError.constraints?.[constraintKey] || 'Validation failed';
+
+        const contexts = firstError.contexts || {};
+        const code =
+          (Object.values(contexts)[0] as any)?.errorCode || 'VALIDATION_ERROR';
+        return new UnprocessableEntityException({
           success: false,
           error: {
-            code: 'VALIDATION_ERROR',
+            code: code,
             message: message,
           },
         });
