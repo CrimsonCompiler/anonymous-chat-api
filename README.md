@@ -1,98 +1,160 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Anonymous Chat API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A real-time, highly scalable anonymous chat application built with NestJS, PostgreSQL, Redis, and Socket.io. 
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Features
+- Anonymous user sessions with JWT authentication.
+- Real-time messaging and broadcasting using Socket.io.
+- Redis Pub/Sub integration for horizontal WebSocket scaling.
+- Strict DTO validations and global error handling.
 
-## Description
+## Tech Stack
+- **Framework:** NestJS
+- **Database:** PostgreSQL (with Drizzle ORM)
+- **Cache & Message Broker:** Redis
+- **WebSockets:** Socket.io
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## 🚀 Local Setup Instructions
 
+Follow these steps to get the project running on your local machine.
+
+### Prerequisites
+Make sure you have the following installed:
+- Node.js (v18 or higher)
+- PostgreSQL
+- Redis Server (Running locally on port 6379) or a Redis instance you can connect to. 
+- Docker is also an option for both PostgreSQL and Redis.
+
+### 1. Clone the repository
 ```bash
-$ npm install
+git clone https://github.com/CrimsonCompiler/anonymous-chat-api.git
+cd anonymous-chat-api
 ```
 
-## Compile and run the project
-
+### 2. Install dependencies
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
 
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+### 3. Environment Variables
+Create a `.env` file in the root directory and add the following configurations:
+```env
+PORT=3000
+DATABASE_URL=postgres://<username>:<password>@localhost:5432/<database_name>
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=your_super_secret_jwt_key
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
+### 4. Run Database Migrations (Drizzle)
+Push your schema to the PostgreSQL database:
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run db:push
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 5. Start the Application
+Start the NestJS development server:
+```bash
+npm run start:dev
+```
+The server will start running at `http://localhost:3000`.
 
-## Resources
+---
 
-Check out a few resources that may come in handy when working with NestJS:
+## 🧪 Postman Testing Guide
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+This comprehensive guide will help you test all HTTP endpoints and WebSocket events using Postman.
 
-## Support
+### A. HTTP API Endpoints
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+**Base URL:** `http://localhost:3000/api/v1`
 
-## Stay in touch
+#### 1. Login / Create User
+- **Method:** `POST`
+- **Endpoint:** `/login`
+- **Body (JSON):**
+  ```json
+  {
+    "username": "tasrik"
+  }
+  ```
+- **Action:** Save the `token` from the response. You will need it for the Authorization header in the next requests.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+#### 2. Create a Room
+- **Method:** `POST`
+- **Endpoint:** `/rooms`
+- **Headers:** `Authorization: Bearer <your_token_here>`
+- **Body (JSON):**
+  
+```json
+  {
+    "name": "backend-squad"
+  }
+  ```
 
-## License
+#### 3. Get All Rooms
+- **Method:** `GET`
+- **Endpoint:** `/rooms`
+- **Headers:** `Authorization: Bearer <your_token_here>`
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+#### 4. Send a Message
+- **Method:** `POST`
+- **Endpoint:** `/rooms/:roomId/messages` *(Replace `:roomId` with a valid room ID)*
+- **Headers:** `Authorization: Bearer <your_token_here>`
+- **Body (JSON):**
+  ```json
+  {
+    "content": "Hello team, testing from Postman!"
+  }
+  ```
+
+#### 5. Get Messages (with Pagination)
+- **Method:** `GET`
+- **Endpoint:** `/rooms/:roomId/messages?limit=10` *(Replace `:roomId` with a valid room ID)*
+- **Headers:** `Authorization: Bearer <your_token_here>`
+
+#### 6. Delete a Room
+- **Method:** `DELETE`
+- **Endpoint:** `/rooms/:roomId` *(Replace `:roomId` with a valid room ID)*
+- **Headers:** `Authorization: Bearer <your_token_here>`
+- **Note:** Only the room creator can delete the room.
+
+---
+
+### B. WebSocket (Socket.io) Testing
+
+You can test real-time events using Postman's **WebSocket / Socket.io** feature.
+
+#### 1. Connection Setup
+1. Open a new request tab in Postman and select **Socket.io**.
+2. **URL:** `ws://localhost:3000/chat`
+3. Go to the **Params** (or Handshake) tab and add the following query parameters:
+   - `token`: `<your_valid_token>`
+   - `roomId`: `<valid_room_id_you_want_to_join>`
+4. Click **Connect**. 
+   - *If the token is invalid, it will disconnect immediately with a `401` error.*
+   - *If the room doesn't exist, it will disconnect with a `404` error.*
+
+#### 2. Listen to Server Events (Server -> Client)
+Go to the **Events** tab in your Postman Socket interface and add the following listeners to watch for incoming data:
+
+| Event Name | Description |
+| :--- | :--- |
+| `room:joined` | Emitted only to you upon successful connection. Contains `{ "activeUsers": ["user1", "user2"] }`. |
+| `message:new` | Broadcasted when anyone in the room sends a message via the HTTP POST endpoint. |
+| `room:user_left` | Broadcasted to the room when another user disconnects or leaves. |
+| `room:deleted` | Broadcasted if the room creator deletes the room. Your socket will automatically disconnect. |
+
+#### 3. Emit Client Events (Client -> Server)
+To test user disconnection, you can manually emit an event to the server.
+- Go to the **Message** section in Postman Socket UI.
+- Set the Event Name to: `room:leave`
+- Select **None** or leave the body empty (No payload is required).
+- Click **Send**.
+- *Expected Result: The server will remove you from the Redis active users list, broadcast `room:user_left` to others, and disconnect your socket.*
+
+---
+
+
+**Maintained by:** Tousif Tasrik
