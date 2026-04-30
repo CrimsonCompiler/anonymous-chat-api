@@ -6,7 +6,7 @@ export class SendMessageDto {
   @Transform(({ value }) => value?.trim())
   @MinLength(1, {
     message: 'Message content cannot be empty',
-    context: { errorCode: 'CONTENT_EMPTY' },
+    context: { errorCode: 'MESSAGE_EMPTY' },
   })
   @MaxLength(1000, {
     message: 'Message content must not exceed 1000 characters',
