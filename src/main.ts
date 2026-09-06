@@ -3,15 +3,19 @@ import { AppModule } from './app.module';
 import { UnprocessableEntityException, ValidationPipe } from '@nestjs/common';
 import { RedisIoAdapter } from './redis-adapter/redis-io.adapter';
 
+let cachedApp: any;
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api/v1');
+  app.enableCors();
 
-  // redisAdapter
+  // Redis Adapter for WebSockets
   const redisIoAdapter = new RedisIoAdapter(app);
   await redisIoAdapter.connectToRedis();
   app.useWebSocketAdapter(redisIoAdapter);
 
+  // Global Validation Pipe
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -37,6 +41,23 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(process.env.PORT ?? 3000);
+  return app;
 }
-bootstrap();
+
+// 1. Vercel Serverless Function Handler
+export default async function handler(req: any, res: any) {
+  if (!cachedApp) {
+    const app = await bootstrap();
+    await app.init();
+    cachedApp = app.getHttpAdapter().getInstance();
+  }
+  return cachedApp(req, res);
+}
+
+// 2. Standalone Server Listener (Local & Railway)
+if (process.env.VERCEL !== '1') {
+  bootstrap().then(async (app) => {
+    const port = process.env.PORT ?? 3000;
+    await app.listen(port);
+  });
+}
